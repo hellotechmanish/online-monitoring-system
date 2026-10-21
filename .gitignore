@@ -1,0 +1,59 @@
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+out/
+target/
+
+# Logs
+*.log
+logs/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Java
+*.class
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+
+# Test coverage
+coverage/
+htmlcov/
+
+# Local database files
+*.sqlite3
+*.db
+
+# Package manager debug logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
