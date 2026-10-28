@@ -20,7 +20,7 @@
     "users:migrate-usernames": "tsx scripts/migrate-usernames.ts"
   },
   "dependencies": {
-    "@hookform/resolvers": "3.9.1",
+    "@hookform/resolvers": "3.9.1", 
     "@radix-ui/react-dialog": "1.1.2",
     "@radix-ui/react-popover": "1.1.2",
     "bcryptjs": "2.4.3",

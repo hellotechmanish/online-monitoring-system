@@ -1,4 +1,10 @@
-import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
+import {
+  Schema,
+  model,
+  models,
+  type InferSchemaType,
+  type Model,
+} from "mongoose";
 
 /**
  * One document per stored device message. `data` holds the original decoded
@@ -13,8 +19,9 @@ const SensorReadingSchema = new Schema(
       type: Schema.Types.Mixed,
       required: true,
       validate: {
-        validator: (v: unknown) => typeof v === "object" && v !== null && !Array.isArray(v),
-        message: "data must be an object",
+          validator: (v: unknown) =>
+          typeof v === "object" && v !== null && !Array.isArray(v),
+          message: "data must be an object",
       },
     },
     receivedAt: { type: Date, required: true },

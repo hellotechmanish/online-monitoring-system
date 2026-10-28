@@ -31,21 +31,21 @@ No broker yet? `npm run mqtt:local-broker` starts a local test broker on `mqtt:/
 
 ## 2. Environment variables
 
-| Variable | Used by | Purpose |
-|---|---|---|
-| `MONGODB_URI` | both | MongoDB connection string (server-only) |
-| `AUTH_SECRET` | both | ≥ 32 chars; signs session cookies and WebSocket tokens |
-| `APP_URL` | both | Public web origin; used for CSRF/Origin checks (web + WebSocket) |
-| `ADMIN_NAME`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` | both | First-run admin bootstrap only (see §4) |
-| `MQTT_URL`, `MQTT_USERNAME`, `MQTT_PASSWORD` | realtime | Broker connection. Empty `MQTT_URL` = live data disabled |
-| `MQTT_TOPIC` | realtime | Default `b25saW5lcmVzbW9uaXRvcg==` (the known topic string) |
-| `MQTT_PAYLOAD_ENCODING` | realtime | `auto` (default), `base64` or `json` — see §6 |
-| `REALTIME_PORT` | realtime | WebSocket/health port (default 3001) |
-| `NEXT_PUBLIC_REALTIME_URL` | web | Browser-facing WebSocket URL, e.g. `wss://derms.example.org/ws` |
-| `READING_HISTORY_MODE` | realtime | `snapshot` (default) or `raw` — see §7 |
-| `NODE_OFFLINE_AFTER_SECONDS` | realtime | Mark a Node offline after this silence (default 120) |
-| `REALTIME_ALLOWED_ORIGINS` | realtime | Extra comma-separated origins allowed to open WebSockets |
-| `SETTINGS_POLL_SECONDS` | realtime | How often GlobalSetting changes are picked up (default 10) |
+| Variable                                         | Used by  | Purpose                                                          |
+| ------------------------------------------------ | -------- | ---------------------------------------------------------------- |
+| `MONGODB_URI`                                    | both     | MongoDB connection string (server-only)                          |
+| `AUTH_SECRET`                                    | both     | ≥ 32 chars; signs session cookies and WebSocket tokens           |
+| `APP_URL`                                        | both     | Public web origin; used for CSRF/Origin checks (web + WebSocket) |
+| `ADMIN_NAME`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` | both     | First-run admin bootstrap only (see §4)                          |
+| `MQTT_URL`, `MQTT_USERNAME`, `MQTT_PASSWORD`     | realtime | Broker connection. Empty `MQTT_URL` = live data disabled         |
+| `MQTT_TOPIC`                                     | realtime | Default `b25saW5lcmVzbW9uaXRvcg==` (the known topic string)      |
+| `MQTT_PAYLOAD_ENCODING`                          | realtime | `auto` (default), `base64` or `json` — see §6                    |
+| `REALTIME_PORT`                                  | realtime | WebSocket/health port (default 3001)                             |
+| `NEXT_PUBLIC_REALTIME_URL`                       | web      | Browser-facing WebSocket URL, e.g. `wss://derms.example.org/ws`  |
+| `READING_HISTORY_MODE`                           | realtime | `snapshot` (default) or `raw` — see §7                           |
+| `NODE_OFFLINE_AFTER_SECONDS`                     | realtime | Mark a Node offline after this silence (default 120)             |
+| `REALTIME_ALLOWED_ORIGINS`                       | realtime | Extra comma-separated origins allowed to open WebSockets         |
+| `SETTINGS_POLL_SECONDS`                          | realtime | How often GlobalSetting changes are picked up (default 10)       |
 
 `.env*` files are git-ignored. Never commit real values.
 
@@ -70,6 +70,7 @@ npm run start:realtime   # realtime service (port 3001) — a long-running Node.
 ## 4. First-run admin bootstrap
 
 On the first MongoDB connection, either process:
+
 1. ensures indexes exist (unique `siteCode`, `nodeId`, `username`, reading indexes);
 2. creates the single `GlobalSetting` (`key: "global"`) **only if missing** (`$setOnInsert`, never overwrites);
 3. creates the initial admin from `ADMIN_*` **only if no admin exists**. It never changes an existing admin; if variables are missing it logs a warning and skips.
@@ -91,16 +92,16 @@ It derives the username from the email local part, keeps the `email` field, and 
 
 ## 5. Roles and permissions (enforced server-side on every request and WebSocket subscription)
 
-| Capability | Admin | Technician | User |
-|---|:-:|:-:|:-:|
-| View Sites / Nodes / readings | all | all | assigned Sites only |
-| Create / edit Sites | ✓ | – | – |
-| Create / edit Nodes, sensor quantities & thresholds | ✓ | – | – |
-| Create accounts | Technician, User | User | – |
-| Edit / deactivate / reset password | Technician, User | User | – |
-| Assign Users to Sites | ✓ | ✓ (Users only) | – |
-| Global Settings | ✓ | – | – |
-| Monitoring (live + history) | all | all | assigned Sites only |
+| Capability                                          |      Admin       |   Technician   |        User         |
+| --------------------------------------------------- | :--------------: | :------------: | :-----------------: |
+| View Sites / Nodes / readings                       |       all        |      all       | assigned Sites only |
+| Create / edit Sites                                 |        ✓         |       –        |          –          |
+| Create / edit Nodes, sensor quantities & thresholds |        ✓         |       –        |          –          |
+| Create accounts                                     | Technician, User |      User      |          –          |
+| Edit / deactivate / reset password                  | Technician, User |      User      |          –          |
+| Assign Users to Sites                               |        ✓         | ✓ (Users only) |          –          |
+| Global Settings                                     |        ✓         |       –        |          –          |
+| Monitoring (live + history)                         |       all        |      all       | assigned Sites only |
 
 Deactivation, role change and password reset increment `sessionVersion`, which revokes existing sessions and open WebSocket subscriptions immediately. Maintenance mode lets only admins sign in or use the API.
 
@@ -117,6 +118,7 @@ Decoded payload examples: `{ "initialStart": 1 }`, `{ "RES_0": 4, "alarm": 0, "s
 > **Confirm against the Python publisher.** Its source was not available. The decoder (`src/lib/protocol/decode.ts`) therefore accepts `data` as Base64 of a UTF-8 JSON object (the documented format) and, in `auto` mode, also a JSON object or JSON string. Once confirmed, set `MQTT_PAYLOAD_ENCODING=base64` (or `json`).
 
 Processing (`src/realtime/ingest.ts`):
+
 - Envelope validated (size ≤ 16 KB, numeric positive `Node_Id`); malformed Base64/JSON/shapes are rejected and counted.
 - The Node must be **registered in MongoDB**. Unknown IDs are rejected (never auto-created). Site ownership comes only from `Node.siteId`; any site field in the payload is ignored.
 - `initialStart`, `start`, `end` are control flags, never readings. `alarm` is kept separately from sensor values.
@@ -130,7 +132,12 @@ Processing (`src/realtime/ingest.ts`):
 `SensorReading` stores **one original decoded message per document**, unchanged:
 
 ```json
-{ "nodeId": 1001, "nodeRef": "<Node _id>", "data": { "RES_0": 4, "alarm": 0, "start": 1 }, "receivedAt": "<server date>" }
+{
+  "nodeId": 1001,
+  "nodeRef": "<Node _id>",
+  "data": { "RES_0": 4, "alarm": 0, "start": 1 },
+  "receivedAt": "<server date>"
+}
 ```
 
 A single `PersistenceWorker` batches writes every `databaseSaveIntervalSeconds` (default 5; changes apply without restart).
@@ -148,11 +155,11 @@ Failed writes are retained and retried with the same `_id` (idempotent, so parti
 1. Browser calls `GET /api/realtime/token` (session cookie) → `{ token, url }` (JWT, 60 s, single use).
 2. Connects to `url?token=…` (Origin checked against `APP_URL`; max message 4 KB; 30 s heartbeat; per-connection rate limit).
 
-| Client → server | Server → client |
-|---|---|
-| `{ "action":"subscribe","requestId":"r1","siteId":"<id>","nodeId":1001,"sensors":["RES_0","RES_1"] }` | `{ "type":"subscribed","requestId":"r1",…,"latest":{…} }` |
-| `{ "action":"unsubscribe","nodeId":1001 }` | `{ "type":"sensor:update","subscriptionId":"r1","nodeId":1001,"timestamp":"…","values":{"RES_0":4},"alarm":0 }` |
-| `{ "action":"ping" }` | `{ "type":"status","mqtt":"connected","liveEnabled":true }`, `{ "type":"error","code":"FORBIDDEN",… }` |
+| Client → server                                                                                       | Server → client                                                                                                 |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `{ "action":"subscribe","requestId":"r1","siteId":"<id>","nodeId":1001,"sensors":["RES_0","RES_1"] }` | `{ "type":"subscribed","requestId":"r1",…,"latest":{…} }`                                                       |
+| `{ "action":"unsubscribe","nodeId":1001 }`                                                            | `{ "type":"sensor:update","subscriptionId":"r1","nodeId":1001,"timestamp":"…","values":{"RES_0":4},"alarm":0 }` |
+| `{ "action":"ping" }`                                                                                 | `{ "type":"status","mqtt":"connected","liveEnabled":true }`, `{ "type":"error","code":"FORBIDDEN",… }`          |
 
 Each subscribe re-checks the user, Node existence, that the Node belongs to `siteId`, Site access, and that each sensor's type is configured on the Node. A connection holds one subscription; subscribing again replaces it. Events go only to subscribers of that Node, filtered to their sensors and tagged with `subscriptionId` so the browser can drop late events from an older selection. Turning off `liveChart.enabled` stops delivery and rejects new subscriptions.
 
@@ -168,23 +175,23 @@ Threshold status (normal / below / above / no threshold) is computed from the No
 
 All routes run on the Node.js runtime, validate input with Zod, return `{ error: { message, code } }` on failure, never return password hashes, and require a session except login. State-changing requests must be same-origin (CSRF check).
 
-| Method & path | Who | Notes |
-|---|---|---|
-| `POST /api/auth/login` | public | `{ username, password }`; rate limited; generic errors |
-| `POST /api/auth/logout`, `GET /api/auth/me` | signed in | |
-| `POST /api/auth/change-password` | signed in | verifies current password; revokes other sessions |
-| `PATCH /api/profile` | signed in | display name only |
-| `GET /api/sites` · `POST /api/sites` | scoped · admin | `?q=&status=&page=&limit=`; includes `nodeCount` |
-| `GET /api/sites/:id` · `PATCH /api/sites/:id` | scoped · admin | GET includes the Site's Nodes |
-| `GET /api/nodes` · `POST /api/nodes` | scoped · admin | `?q=&siteId=&status=`; 409 `Node ID already exists`, 400 `Please select a valid Site` |
-| `GET /api/nodes/:id` · `PATCH /api/nodes/:id` | scoped · admin | `nodeId` immutable; no IP field exists |
-| `GET /api/users` · `POST /api/users` | admin/technician | role limited by actor; 409 `Username already exists` |
-| `GET/PATCH /api/users/:id`, `PATCH /api/users/:id/assign-sites` | admin/technician | cannot touch admins or self |
-| `GET /api/settings` · `PATCH /api/settings` | signed in · admin | partial updates; validated |
-| `GET /api/readings` | scoped | stored raw payloads, paginated |
-| `GET /api/readings/history` | scoped | see §7 |
-| `GET /api/realtime/token` | signed in | WebSocket token |
-| `GET /api/monitoring/nav` | scoped | accessible Sites with their Nodes |
+| Method & path                                                   | Who               | Notes                                                                                 |
+| --------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------- |
+| `POST /api/auth/login`                                          | public            | `{ username, password }`; rate limited; generic errors                                |
+| `POST /api/auth/logout`, `GET /api/auth/me`                     | signed in         |                                                                                       |
+| `POST /api/auth/change-password`                                | signed in         | verifies current password; revokes other sessions                                     |
+| `PATCH /api/profile`                                            | signed in         | display name only                                                                     |
+| `GET /api/sites` · `POST /api/sites`                            | scoped · admin    | `?q=&status=&page=&limit=`; includes `nodeCount`                                      |
+| `GET /api/sites/:id` · `PATCH /api/sites/:id`                   | scoped · admin    | GET includes the Site's Nodes                                                         |
+| `GET /api/nodes` · `POST /api/nodes`                            | scoped · admin    | `?q=&siteId=&status=`; 409 `Node ID already exists`, 400 `Please select a valid Site` |
+| `GET /api/nodes/:id` · `PATCH /api/nodes/:id`                   | scoped · admin    | `nodeId` immutable; no IP field exists                                                |
+| `GET /api/users` · `POST /api/users`                            | admin/technician  | role limited by actor; 409 `Username already exists`                                  |
+| `GET/PATCH /api/users/:id`, `PATCH /api/users/:id/assign-sites` | admin/technician  | cannot touch admins or self                                                           |
+| `GET /api/settings` · `PATCH /api/settings`                     | signed in · admin | partial updates; validated                                                            |
+| `GET /api/readings`                                             | scoped            | stored raw payloads, paginated                                                        |
+| `GET /api/readings/history`                                     | scoped            | see §7                                                                                |
+| `GET /api/realtime/token`                                       | signed in         | WebSocket token                                                                       |
+| `GET /api/monitoring/nav`                                       | scoped            | accessible Sites with their Nodes                                                     |
 
 ## 11. Data model (`src/lib/models`)
 

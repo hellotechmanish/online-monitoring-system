@@ -1,11 +1,19 @@
 "use client";
 
-import { classifyValue, colorForSensor, resolveThresholds, type ThresholdStatus } from "@/lib/protocol/sensors";
+import {
+  classifyValue,
+  colorForSensor,
+  resolveThresholds,
+  type ThresholdStatus,
+} from "@/lib/protocol/sensors";
 import type { LatestValue } from "@/lib/live-series";
 import type { SensorConfigDTO } from "@/lib/types";
 import { Badge } from "@/components/ui/misc";
 
-const STATUS: Record<ThresholdStatus, { label: string; tone: "success" | "warning" | "danger" | "neutral" }> = {
+const STATUS: Record<
+  ThresholdStatus,
+  { label: string; tone: "success" | "warning" | "danger" | "neutral" }
+> = {
   normal: { label: "Normal", tone: "success" },
   low: { label: "Below threshold", tone: "warning" },
   high: { label: "Above threshold", tone: "danger" },
@@ -29,27 +37,65 @@ export function LatestValues({
   formatDateTime: (v: string) => string;
 }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-3 gap-1 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8">
       {sensors.map((s) => {
         const lv = latest[s];
         const thr = resolveThresholds(s, config);
         const status = lv ? classifyValue(lv.value, thr) : null;
+
         return (
-          <div key={s} className="rounded-lg border border-border bg-surface p-3" style={{ borderLeft: `4px solid ${colorForSensor(s)}` }}>
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-sm font-semibold">{s}</span>
-              {status && <Badge tone={STATUS[status].tone}>{STATUS[status].label}</Badge>}
+          <div
+            key={s}
+            className="min-w-0 rounded border border-border bg-surface p-1.5"
+            style={{ borderLeft: `2px solid ${colorForSensor(s)}` }}
+          >
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-1">
+              <span className="truncate font-mono text-[10px] font-semibold">
+                {s}
+              </span>
+
+              {status && (
+                <span
+                  className={`rounded px-1 py-0.5 text-[9px] leading-tight ${
+                    STATUS[status].tone === "danger"
+                      ? "bg-danger/10 text-danger"
+                      : "bg-muted text-foreground"
+                  }`}
+                >
+                  {STATUS[status].label}
+                </span>
+              )}
             </div>
-            <p className="tabular mt-1 text-2xl font-semibold">{lv ? lv.value : <span className="text-base font-normal text-subtle">No reading yet</span>}</p>
-            <div className="mt-1 space-y-0.5 text-xs text-subtle">
-              <p>{lv ? formatDateTime(lv.timestamp) : "—"}</p>
-              <p>
-                Thresholds: {thr ? `${thr.low ?? "—"} … ${thr.high ?? "—"}` : "not configured"}
+
+            <p className="tabular mt-1 break-words text-base font-semibold leading-tight">
+              {lv ? (
+                lv.value
+              ) : (
+                <span className="text-[10px] font-normal text-subtle">
+                  No reading
+                </span>
+              )}
+            </p>
+
+            <div className="mt-1 space-y-1 text-[9px] leading-tight text-subtle">
+              <p className="break-words">
+                {lv ? formatDateTime(lv.timestamp) : "—"}
               </p>
+
+              <p className="break-words">
+                Thr: {thr ? `${thr.low ?? "—"}–${thr.high ?? "—"}` : "Not set"}
+              </p>
+
               <p>
-                Device alarm:{" "}
+                Alarm:{" "}
                 {lv && lv.alarm !== null ? (
-                  <span className={lv.alarm ? "font-semibold text-danger" : "text-foreground"}>{lv.alarm}</span>
+                  <span
+                    className={
+                      lv.alarm ? "font-semibold text-danger" : "text-foreground"
+                    }
+                  >
+                    {lv.alarm}
+                  </span>
                 ) : (
                   "—"
                 )}
