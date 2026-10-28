@@ -1,8 +1,9 @@
 
 # Environment variables and secrets
 .next/
-.env
-.env.*
+! .env
+ .env.*
+ 
 !.env.example
 
 # Dependencies

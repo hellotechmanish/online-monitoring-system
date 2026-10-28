@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { SensorReading } from "@/lib/models";
 
+// this is the API route for exporting sensor readings of a specific node as a CSV file, filtered by a date range provided in the query parameters. It validates the node ID and date range, fetches the relevant sensor readings from the database, merges readings with the same timestamp, dynamically discovers sensor columns, and formats the data into a CSV format for download.
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
