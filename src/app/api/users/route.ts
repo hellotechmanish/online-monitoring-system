@@ -1,5 +1,14 @@
 import bcrypt from "bcryptjs";
-import { ApiError, escapeRegex, ok, pagination, parseBody, requirePermission, requireUser, route } from "@/lib/api";
+import {
+  ApiError,
+  escapeRegex,
+  ok,
+  pagination,
+  parseBody,
+  requirePermission,
+  requireUser,
+  route,
+} from "@/lib/api";
 import { connectDB } from "@/lib/db";
 import { User } from "@/lib/models";
 import { assertSitesExist } from "@/lib/site-helpers";
@@ -20,7 +29,8 @@ export const GET = route(async (req) => {
   if (me.role !== "admin") filter.role = { $ne: "admin" };
   const role = req.nextUrl.searchParams.get("role");
   if (role === "admin" || role === "technician" || role === "user") {
-    if (me.role !== "admin" && role === "admin") return ok({ items: [], total: 0, page, limit });
+    if (me.role !== "admin" && role === "admin")
+      return ok({ items: [], total: 0, page, limit });
     filter.role = role;
   }
   if (q) {
@@ -28,7 +38,11 @@ export const GET = route(async (req) => {
     filter.$or = [{ name: re }, { username: re }];
   }
   const [docs, total] = await Promise.all([
-    User.find(filter).sort({ role: 1, username: 1 }).skip(skip).limit(limit).lean(),
+    User.find(filter)
+      .sort({ role: 1, username: 1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
     User.countDocuments(filter),
   ]);
   return ok({ items: docs.map(serializeUser), total, page, limit });
@@ -36,16 +50,29 @@ export const GET = route(async (req) => {
 
 export const POST = route(async (req) => {
   const me = await requireUser();
-  requirePermission(me, "users:create", "You do not have permission to create users");
+  requirePermission(
+    me,
+    "users:create",
+    "You do not have permission to create users",
+  );
   if (!rateLimit(`user-create:${me.id}`, 30, 15 * 60_000).ok) {
-    throw new ApiError(429, "Too many accounts created recently. Try again later.", "RATE_LIMITED");
+    throw new ApiError(
+      429,
+      "Too many accounts created recently. Try again later.",
+      "RATE_LIMITED",
+    );
   }
   const body = await parseBody(req, userCreateSchema);
   if (!creatableRoles(me).includes(body.role)) {
-    throw new ApiError(403, `You cannot create ${body.role} accounts`, "FORBIDDEN");
+    throw new ApiError(
+      403,
+      `You cannot create ${body.role} accounts`,
+      "FORBIDDEN",
+    );
   }
   await connectDB();
-  if (await User.exists({ username: body.username })) throw new ApiError(409, "Username already exists", "DUPLICATE");
+  if (await User.exists({ username: body.username }))
+    throw new ApiError(409, "Username already exists", "DUPLICATE");
   const assignedSites = await assertSitesExist(body.assignedSites);
   const passwordHash = await bcrypt.hash(body.password, 12);
   // Unique index on username rejects duplicates, including concurrent creation.

@@ -98,7 +98,7 @@ export default function DownloadButton({ nodeId }: DownloadButtonProps) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="download-title"
-            className="w-full max-w-sm overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-2xl"
+            className="w-full max-w-sm overflow-hidden rounded-lg border border-gray-200 bg-white text-gray-900 shadow-2xl dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
           >
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div className="flex items-center gap-2.5">

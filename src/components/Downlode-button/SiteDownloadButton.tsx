@@ -115,10 +115,10 @@ export default function SiteDownloadButton({
             role="dialog"
             aria-modal="true"
             aria-labelledby="site-export-title"
-            className="w-full max-w-sm rounded-lg border border-border bg-card text-card-foreground shadow-2xl"
+            className="w-full max-w-sm rounded-lg border border-gray-200 bg-white text-gray-900 shadow-2xl dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
               <div className="flex items-center gap-2">
                 <div className="rounded-md border border-primary/20 bg-primary/10 p-2 text-primary">
                   <Download className="h-4 w-4" />

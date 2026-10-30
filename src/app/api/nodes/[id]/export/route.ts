@@ -47,8 +47,10 @@ export async function GET(
         $lt: end,
       },
     })
-      .sort({ createdAt: 1, _id: 1 })
+      .sort({ createdAt: -1, _id: 1 })
       .lean();
+
+    // console.log("readings", readings);
 
     // Merge records belonging to the same node and createdAt second.
     const grouped = new Map<
@@ -85,7 +87,7 @@ export async function GET(
     }
 
     const mergedReadings = [...grouped.values()].sort(
-      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
     );
 
     // Discover all sensor columns dynamically.
